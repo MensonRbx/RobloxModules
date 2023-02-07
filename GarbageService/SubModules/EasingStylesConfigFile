@@ -1,0 +1,56 @@
+local MATH_SIN = math.sin
+local MATH_COS = math.cos
+local MATH_POW = math.pow
+local MATH_PI = math.pi
+local MATH_SQRT = math.sqrt
+
+local EasingStyleConfigFile = {
+
+	linear = function(x)
+		return x
+	end,
+
+	easeInSine = function(x)
+		return 1 - MATH_COS((x * MATH_PI) / 2)
+	end,
+	
+	easeInQuad = function(x)
+		return x^2
+	end,
+	
+	easeInCubic = function(x)
+		return x^3
+	end,
+	
+	easeInQuart = function(x)
+		return x^4
+	end,
+	
+	easeInQuint = function(x)
+		return x^5
+	end,
+	
+	easeInExpo = function(x)
+		return MATH_POW(2, 10 * x - 10)
+	end,
+	
+	easeInCirc = function(x)
+		return 1 - MATH_SQRT(1 - MATH_POW(x, 2))
+	end,
+	
+
+	easeOutSine = function(x)
+		return MATH_SIN((x * MATH_PI) / 2)
+	end,
+
+	easeOutBack = function(x)
+		local c1 = 1.70158
+		local c3 = c1 + 1
+		return 1 + c3 * MATH_POW(x - 1, 3) + c1 * MATH_POW(x - 1, 2)
+	end,
+
+
+
+}
+
+return EasingStyleConfigFile
