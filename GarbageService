@@ -1,0 +1,55 @@
+local SubModules = script.Parent:WaitForChild("SubModules")
+local EasingStylesConfigFile = require(SubModules:WaitForChild("EasingStylesConfigFile"))
+
+local GarbageService = {}
+GarbageService.__index = GarbageService
+
+function GarbageService.new()
+	local self = setmetatable({}, GarbageService)
+
+	self.bin = {}
+	self.maxItems = 256	--literally no reason for this except cool number and maybe too many items is bad
+
+	return self
+end
+
+function GarbageService:AddItem(item: Part, lifetime: number)
+	
+	if #self.bin >= self.maxItems then
+		error("Max Number of items in Garbage Bin Reached!")
+	end
+	
+	table.insert(self.bin, item)
+	task.delay(lifetime, self.DestroyItem, self, item)
+end
+
+function GarbageService:AddItemWithFade(item: Part, lifetime: number, propertyName: string, easingStyle: string)
+	
+	self:AddItem(item, lifetime)
+	
+	propertyName = propertyName or "Transparency"
+	easingStyle = easingStyle or "linear"
+	
+	local easingFunction = EasingStylesConfigFile[easingStyle]
+	
+	local timeStarted = tick()
+	local waitTime = lifetime/105
+	
+	for i = 0, 1, 1/100 do
+		if not item then
+			break
+		end
+		
+		local currentTransparency = easingFunction(i)
+		item[propertyName] = currentTransparency
+		
+		task.wait(waitTime)
+	end
+	
+end
+
+function GarbageService:DestroyItem(item: Part)
+	item:Destroy()
+end
+
+return GarbageService.new()
