@@ -1,0 +1,17 @@
+local function DeepCopy(x)
+	
+	local xType = type(x)
+	local copy
+	if xType == "table" then
+		copy = {}
+		for index, value in x do
+			copy[index] = value
+		end
+	else
+		copy = x
+	end
+	
+	return copy
+end
+
+return DeepCopy
