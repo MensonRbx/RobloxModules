@@ -1,0 +1,70 @@
+--this is the most useless thing I have ever made
+local CacheModule = {}
+CacheModule.__index = CacheModule
+
+function CacheModule.new(dataType, maxSize)
+	local self = setmetatable({}, CacheModule)
+	
+	self.dataType = dataType
+	self.maxSize = maxSize
+	
+	self.content = {}
+
+	return self
+end
+
+function CacheModule:GetFullCache()
+	return self.content
+end
+
+function CacheModule:GetFromCache(index)
+	
+	local success, err = pcall(function()
+		return self.content[index]
+	end)
+	
+	if success then
+		return self.content[index]
+	else
+		return nil
+	end
+	
+end
+
+function CacheModule:AddToCache(item, index)
+	assert(type(item) == self.dataType, "CACHE ERROR: Inncorrect type of data added to cache")
+	
+	index = index or #self.content + 1
+	
+	if #self.content >= self.maxSize then
+		for i in self.content do
+			self:RemoveFromCacheIndex(self.content[i])
+			break
+		end
+	end	
+
+	table.insert(self.content, index, item)
+	
+	return self.content[index]
+end
+
+function CacheModule:AddItemToListInCache(subIndex, subValue, index)
+	
+	local subTable = self:GetFromCache(index)
+	
+	if not subTable or type(subTable) ~= "table" then return end
+	
+	subTable[subIndex] = subValue
+	
+	return true
+end
+
+function CacheModule:RemoveFromCacheIndex(index)
+	table.remove(self.content, index)
+end
+
+function CacheModule:Reset()
+	self.content = {}
+end
+
+return CacheModule
