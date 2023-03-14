@@ -1,7 +1,6 @@
 local TRANSPARENCY_STEP = 0.05
 
 local GarbageInfoClass = require(script.Parent:WaitForChild("GarbageInfoClass"))
-local EasingStylesConfigFile = require(script:WaitForChild("EasingStylesConfigFile"))
 
 local OnDestroyEffects = script.OnDestroyEffects
 
