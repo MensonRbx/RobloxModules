@@ -9,9 +9,11 @@ local defaultStore = DataStoreService:GetDataStore(DATASTORE_NAME)
 local BetterDataService = {}
 BetterDataService.__index = BetterDataService
 
---[[
-  No Need for constructor for singleton
-]]
+function BetterDataService.new()
+	local self = setmetatable({}, BetterDataService)
+	
+	return self
+end
 
 --gets player data
 function BetterDataService:GetPlayerDataFromStore(player: Player, dataStore: DataStore | OrderedDataStore)
@@ -37,6 +39,11 @@ end
 function BetterDataService:SetPlayerStoreData(player: Player, valueToSave: any, dataStore: DataStore | OrderedDataStore)
 
 	dataStore = dataStore or defaultStore
+	
+	--think this is just for studio
+	if typeof(valueToSave) == "table" then
+		coroutine.wrap(BetterDataService._SetOrderedDataStoreValues)(BetterDataService, player, valueToSave)
+	end
 
 	local count = 0
 	repeat
@@ -72,4 +79,4 @@ function BetterDataService:_SetOrderedDataStoreValues(player: Player, dataTable:
 
 end
 
-return BetterDataService
+return BetterDataService.new()
