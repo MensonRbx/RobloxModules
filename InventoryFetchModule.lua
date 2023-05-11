@@ -3,7 +3,7 @@
 --[[
 	UserInventoryFetchModule:
 		
-	Module created to get user's inventory data from a proxy
+	Module created to get user's inventory data from a proxy server
 	
 ]]
 
@@ -25,16 +25,9 @@ function InventoryFetchModule.new()
 	return self
 end
 
-function InventoryFetchModule:GetPlayerInventroyRecursive(userId: number, pageNumber: number, lastLength: number)
+function InventoryFetchModule:GetPlayerInventroyAsync(userId: number, pageNumber: number)
 	
-	lastLength = lastLength or 0
-	pageNumber = pageNumber or 1	
-	
-	if lastLength > MAX_RECURSIVE_ATTEMPTS then
-		return 
-	end
-	
-	local JSONData = self:_GetJSONData(pageNumber, userId, lastLength)
+	local JSONData = self:_GetJSONData(pageNumber, userId)
 	
 	if JSONData then
 		return self:_DecodeJSONAsync(JSONData, userId)		
