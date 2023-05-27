@@ -1,0 +1,70 @@
+local GroupService = game:GetService("GroupService")
+
+local MAX_RETRIES = 5
+
+local BetterGroupService = {}
+BetterGroupService.__index = BetterGroupService
+
+function BetterGroupService.new()
+	local self = setmetatable({}, BetterGroupService)
+	
+	return self
+end
+
+function BetterGroupService:GetPlayerGroups(playerId)
+	return self:_RepeatAsyncMethod("GetGroupsAsync", playerId)
+end
+
+function BetterGroupService:GetGroupInfo(groupId)
+	return self:_RepeatAsyncMethod("GetGroupInfoAsync", groupId)
+end
+
+function BetterGroupService:GetGroupAllies(groupId)
+	local pages = self:_RepeatAsyncMethod("GetAlliesAsync", groupId)
+	return self:_GetPagesAsTable(pages)	
+end
+
+function BetterGroupService:GetGroupEnemies(groupId)
+	local pages: StandardPages = self:_RepeatAsyncMethod("GetEnemiesAsync", groupId)
+	return self:_GetPagesAsTable(pages)
+end
+
+function BetterGroupService:_GetPagesAsTable(pages)
+	local dataTable = {}
+
+	repeat
+		local tempData = pages:GetCurrentPage()
+
+		for key, value in tempData do
+			dataTable[key] = value
+		end
+
+		if pages.IsFinished then
+			return dataTable
+		end
+
+		pcall(pages.AdvanceToNextPageAsync, pages)
+	until pages.IsFinished
+	
+end
+
+function BetterGroupService:_RepeatAsyncMethod(method: () -> any, ...: any)
+	
+	local retries = 0
+	
+	repeat
+		local success, value = pcall(GroupService[method], GroupService, ...)
+		
+		if success and value then
+			return value, retries
+		end
+		
+		print(success, value)
+		
+		task.wait(2)
+		retries += 1
+	until retries > MAX_RETRIES
+	
+end
+
+return BetterGroupService.new()
