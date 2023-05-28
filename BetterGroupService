@@ -8,30 +8,67 @@ BetterGroupService.__index = BetterGroupService
 function BetterGroupService.new()
 	local self = setmetatable({}, BetterGroupService)
 	
+	self.playerGroupsCache = {}
+	self.groupInfoCache = {}
+	self.groupAlliesCache = {}
+	self.groupEnemiesCache = {}
+	
 	return self
 end
 
 function BetterGroupService:GetPlayerGroups(playerId)
-	return self:_RepeatAsyncMethod("GetGroupsAsync", playerId)
+	if self.playerGroupsCache[playerId] then
+		return self.playerGroupsCache[playerId]
+	end
+	
+	local playerGroups = self:_RepeatAsyncMethod("GetGroupsAsync", playerId)
+	
+	self.playerGroupsCache[playerId] = playerGroups
+	
+	return playerGroups 
 end
 
 function BetterGroupService:GetGroupInfo(groupId)
-	return self:_RepeatAsyncMethod("GetGroupInfoAsync", groupId)
+	if self.groupInfoCache[groupId] then
+		return self.groupInfoCache[groupId]
+	end
+	
+	local groupInfo = self:_RepeatAsyncMethod("GetGroupInfoAsync", groupId)
+	
+	self.groupInfoCache[groupId] = groupInfo
+	
+	return groupInfo
 end
 
 function BetterGroupService:GetGroupAllies(groupId)
+	if self.groupAlliesCache[groupId] then
+		return self.groupAlliesCache[groupId]
+	end
+	
 	local pages = self:_RepeatAsyncMethod("GetAlliesAsync", groupId)
-	return self:_GetPagesAsTable(pages)	
+	local tableOfPage = self:_GetPagesAsTable(pages)
+
+	self.groupAlliesCache[groupId] = tableOfPage
+	
+	return tableOfPage
 end
 
 function BetterGroupService:GetGroupEnemies(groupId)
+	if self.groupEnemiesCache[groupId] then
+		return self.groupEnemiesCache[groupId]
+	end
+	
 	local pages: StandardPages = self:_RepeatAsyncMethod("GetEnemiesAsync", groupId)
-	return self:_GetPagesAsTable(pages)
+	local tableOfPage = self:_GetPagesAsTable(pages)
+	
+	self.groupEnemiesCache[groupId] = tableOfPage
+	
+	return tableOfPage 
 end
 
 function BetterGroupService:_GetPagesAsTable(pages)
+	
 	local dataTable = {}
-
 	repeat
 		local tempData = pages:GetCurrentPage()
 
