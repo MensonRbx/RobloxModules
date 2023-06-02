@@ -1,3 +1,7 @@
+--[[
+	Direction function made using ChatGPT, have to give credit
+]]
+
 print("Loading script")
 
 local Players = game:GetService("Players")
