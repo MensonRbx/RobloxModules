@@ -2,12 +2,8 @@
 
 --[[
 	Scientific Notation Module:
-	
 	Purpose: Expression of big numbers greater than possible in Luau in most concise method possible
-	
 ]]
-
-local Util = require(script:WaitForChild("Util"))
 
 local ROUND_TO = 4
 local WARN_MODE = false
@@ -31,7 +27,6 @@ function ScientificNumber.new(number)
 		self.exponent = ""
 	end
 
-	
 	return self
 end
 
@@ -143,21 +138,19 @@ end
 --methods only accessed via metamethods
 function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 
-	local exponent1 = sciNum:GetExponentFromString()
-	local exponent2 = otherSciNum:GetExponentFromString()
-
 	local differenceInCoefficients
 	local differenceInExponents 
 	
 	local largerNum, smallerNum
+	
 	if sciNum > otherSciNum then
-		
+		largerNum, smallerNum = sciNum, otherSciNum	
 	elseif sciNum < otherSciNum then
-		
+		largerNum, smallerNum = otherSciNum, sciNum
 	else
 		--answer is same but coefficient x2
 		local newNumber = ScientificNumber.new()
-		newNumber.exponent = exponent1
+		newNumber.exponent = sciNum.exponent
 		newNumber.coefficient = sciNum.coefficient * 2
 		
 		if newNumber.coefficient >= 10 then
@@ -168,21 +161,32 @@ function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 		return newNumber
 		
 	end
-		
-		
+	
+	local exponent1 = largerNum:GetExponentFromString()
+	local exponent2 = smallerNum:GetExponentFromString()
+	
+	--TODO
+	
+	local finalCooefficient
+	local finalExponent
 	
 	if typeof(exponent1) == "number" and typeof(exponent2) == "number" then
 		differenceInExponents = exponent1 - exponent2
-		differenceInCoefficients = sciNum.coefficient - otherSciNum.coefficient
+		differenceInCoefficients = largerNum.coefficient - smallerNum.coefficient
 
 		if differenceInExponents > ROUND_TO then
-			return sciNum
+			return largerNum
 		end
 
-		if differenceInCoefficients < 1 then
-
+		if differenceInCoefficients < 0 then
+			
+			finalCooefficient = 10 - differenceInCoefficients
+			
+		elseif differenceInCoefficients < 1 then
+			
 		end
-
+		
+		
 	else
 
 	end
@@ -230,28 +234,56 @@ function ScientificNumber.__lt(sciNum, otherNumber)
 	
 	if isScientificNumber(otherNumber) then
 		
+		--compare exponents to check if one is bigger
 		if sciNum.exponent > otherNumber.exponent then
 			return false
 		elseif sciNum.exponent < otherNumber.exponent then
 			return true
 		else
+			--[[
+			Compare cooefficients
+			>= due to comparing less than, inverse of greater than/equal to
+			]]
+			if sciNum.coefficient >= otherNumber.coefficient then
+				return false
+			elseif sciNum.coefficient < otherNumber.coefficient then
+				return true
+			end
 			
 		end
 		
 	elseif typeof(otherNumber) == "number" then
-		local sciNumLength = sciNum:GetLength()
-		local realNumLength = ScientificNumber:GetLength(otherNumber)
-		
-		if sciNumLength > realNumLength then
+		local newSciNum = ScientificNumber.new(otherNumber)
+		ScientificNumber.__lt(sciNum, newSciNum)
+	end
+	
+end
+
+function ScientificNumber.__le(sciNum, otherNumber)
+	
+	if isScientificNumber(otherNumber) then
+
+		--compare exponents to check if one is bigger
+		if sciNum.exponent > otherNumber.exponent then
 			return false
-		elseif realNumLength > sciNumLength then
+		elseif sciNum.exponent <= otherNumber.exponent then
 			return true
 		else
-			
-			
-			
+			--[[
+			Compare cooefficients
+			>= due to comparing less than, inverse of greater than/equal to
+			]]
+			if sciNum.coefficient > otherNumber.coefficient then
+				return false
+			elseif sciNum.coefficient <= otherNumber.coefficient then
+				return true
+			end
+
 		end
 		
+	elseif typeof(otherNumber) == "number" then
+		local newSciNum = ScientificNumber.new(otherNumber)
+		ScientificNumber.__le(sciNum, newSciNum)
 	end
 	
 end
