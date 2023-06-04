@@ -16,6 +16,10 @@ function isScientificNumber(number)
 	return getmetatable(number) == ScientificNumber
 end
 
+function CanBeScientificNumber(number)
+	return (math.floor(number) == number) and math.abs(number) == number
+end
+
 function ScientificNumber.new(number)
 	local self = setmetatable({}, ScientificNumber)
 	
@@ -148,18 +152,18 @@ function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 	elseif sciNum < otherSciNum then
 		largerNum, smallerNum = otherSciNum, sciNum
 	else
+		print("Equal")
 		--answer is same but coefficient x2
 		local newNumber = ScientificNumber.new()
 		newNumber.exponent = sciNum.exponent
 		newNumber.coefficient = sciNum.coefficient * 2
-		
+
 		if newNumber.coefficient >= 10 then
 			newNumber.coefficient /= 10
 			newNumber.exponent += 1
 		end
-		
+					
 		return newNumber
-		
 	end
 	
 	local exponent1 = largerNum:GetExponentFromString()
@@ -233,28 +237,15 @@ end
 function ScientificNumber.__lt(sciNum, otherNumber)
 	
 	if isScientificNumber(otherNumber) then
-		
 		--compare exponents to check if one is bigger
-		if sciNum.exponent > otherNumber.exponent then
-			return false
-		elseif sciNum.exponent < otherNumber.exponent then
-			return true
+		if sciNum.exponent ~= otherNumber.exponent then
+			return sciNum.exponent < otherNumber.exponent
 		else
-			--[[
-			Compare cooefficients
-			>= due to comparing less than, inverse of greater than/equal to
-			]]
-			if sciNum.coefficient >= otherNumber.coefficient then
-				return false
-			elseif sciNum.coefficient < otherNumber.coefficient then
-				return true
-			end
-			
+			return sciNum.coefficient < otherNumber.coefficient
 		end
 		
 	elseif typeof(otherNumber) == "number" then
-		local newSciNum = ScientificNumber.new(otherNumber)
-		ScientificNumber.__lt(sciNum, newSciNum)
+		ScientificNumber.__lt(sciNum, ScientificNumber.new(otherNumber))
 	end
 	
 end
@@ -264,26 +255,15 @@ function ScientificNumber.__le(sciNum, otherNumber)
 	if isScientificNumber(otherNumber) then
 
 		--compare exponents to check if one is bigger
-		if sciNum.exponent > otherNumber.exponent then
-			return false
-		elseif sciNum.exponent <= otherNumber.exponent then
-			return true
+		
+		if sciNum.exponent ~= otherNumber.exponent then
+			return sciNum.exponent <= otherNumber.exponent 
 		else
-			--[[
-			Compare cooefficients
-			>= due to comparing less than, inverse of greater than/equal to
-			]]
-			if sciNum.coefficient > otherNumber.coefficient then
-				return false
-			elseif sciNum.coefficient <= otherNumber.coefficient then
-				return true
-			end
-
+			return sciNum.coefficient <= otherNumber.coefficient 
 		end
 		
 	elseif typeof(otherNumber) == "number" then
-		local newSciNum = ScientificNumber.new(otherNumber)
-		ScientificNumber.__le(sciNum, newSciNum)
+		ScientificNumber.__le(sciNum, ScientificNumber.new(otherNumber))
 	end
 	
 end
