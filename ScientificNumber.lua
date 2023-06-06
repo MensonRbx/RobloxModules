@@ -121,7 +121,6 @@ function ScientificNumber:GetExponentFromString()
 	return finalExponent
 end
 
---DEPRECIATED
 function ScientificNumber:GetLength(number)
 	
 	if number then
@@ -141,9 +140,6 @@ end
 
 --methods only accessed via metamethods
 function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
-
-	local differenceInCoefficients
-	local differenceInExponents 
 	
 	local largerNum, smallerNum
 	
@@ -157,12 +153,12 @@ function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 		local newNumber = ScientificNumber.new()
 		newNumber.exponent = sciNum.exponent
 		newNumber.coefficient = sciNum.coefficient * 2
-
+		
 		if newNumber.coefficient >= 10 then
 			newNumber.coefficient /= 10
 			newNumber.exponent += 1
 		end
-					
+		
 		return newNumber
 	end
 	
@@ -174,25 +170,32 @@ function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 	local finalCooefficient
 	local finalExponent
 	
+	local sumofCoefficients
+	local sumofExponents 
+	
 	if typeof(exponent1) == "number" and typeof(exponent2) == "number" then
-		differenceInExponents = exponent1 - exponent2
-		differenceInCoefficients = largerNum.coefficient - smallerNum.coefficient
-
-		if differenceInExponents > ROUND_TO then
+		
+		local difference = exponent1 - exponent2
+		if difference > ROUND_TO then
 			return largerNum
 		end
 
-		if differenceInCoefficients < 0 then
-			
-			finalCooefficient = 10 - differenceInCoefficients
-			
-		elseif differenceInCoefficients < 1 then
-			
-		end
+		sumofExponents = exponent1 + exponent2
+		sumofCoefficients = largerNum.coefficient + smallerNum.coefficient
 		
+		if sumofCoefficients > 10 then
+			sumofCoefficients /= 10
+			sumofExponents += 1
+		end		
 		
+		local result = ScientificNumber.new()
+		result.coefficient = sumofCoefficients
+		result.exponent = sumofExponents
+		
+		return result
 	else
-
+		warn("One exponent is not number, cannot add together.")
+		return largerNum
 	end
 
 end
@@ -227,9 +230,9 @@ end
 function ScientificNumber:__add(valueToAdd)
 
 	if self:IsScientificNumber(valueToAdd) then
-		self.AddSciNumbers(self, valueToAdd)
+		return self.AddSciNumbers(self, valueToAdd)
 	elseif typeof(valueToAdd) == "number" then
-		self.AddNormalNumber(self, valueToAdd)
+		return self.AddNormalNumber(self, valueToAdd)
 	end
 
 end
@@ -245,7 +248,7 @@ function ScientificNumber.__lt(sciNum, otherNumber)
 		end
 		
 	elseif typeof(otherNumber) == "number" then
-		ScientificNumber.__lt(sciNum, ScientificNumber.new(otherNumber))
+		return ScientificNumber.__lt(sciNum, ScientificNumber.new(otherNumber))
 	end
 	
 end
@@ -260,10 +263,20 @@ function ScientificNumber.__le(sciNum, otherNumber)
 			return sciNum.exponent <= otherNumber.exponent 
 		else
 			return sciNum.coefficient <= otherNumber.coefficient 
+			
+			--[[
+			Compare cooefficients
+			>= due to comparing less than, inverse of greater than/equal to
+			]]
+			--if sciNum.coefficient > otherNumber.coefficient then
+			--	return false
+			--elseif sciNum.coefficient <= otherNumber.coefficient then
+			--	return true
+			--end
 		end
 		
 	elseif typeof(otherNumber) == "number" then
-		ScientificNumber.__le(sciNum, ScientificNumber.new(otherNumber))
+		return ScientificNumber.__le(sciNum, ScientificNumber.new(otherNumber))
 	end
 	
 end
