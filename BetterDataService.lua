@@ -1,5 +1,6 @@
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local DATASTORE_NAME = "StudioStore"
 local MAX_RETRIES = 5
@@ -41,7 +42,7 @@ function BetterDataService:SetPlayerStoreData(player: Player, valueToSave: any, 
 	dataStore = dataStore or defaultStore
 	
 	--think this is just for studio
-	if typeof(valueToSave) == "table" then
+	if RunService:IsStudio() and typeof(valueToSave) == "table" then
 		coroutine.wrap(BetterDataService._SetOrderedDataStoreValues)(BetterDataService, player, valueToSave)
 	end
 
