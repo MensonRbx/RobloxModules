@@ -139,7 +139,7 @@ function ScientificNumber:GetLength(number)
 end
 
 --methods only accessed via metamethods
-function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
+function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 	
 	local largerNum, smallerNum
 	
@@ -186,6 +186,9 @@ function ScientificNumber.AddSciNumbers(sciNum, otherSciNum)
 		if sumofCoefficients > 10 then
 			sumofCoefficients /= 10
 			sumofExponents += 1
+		elseif sumofExponents < 1 then
+			sumofCoefficients *= 10
+			sumofExponents -= 1			
 		end		
 		
 		local result = ScientificNumber.new()
@@ -212,7 +215,7 @@ function ScientificNumber:AddNormalNumber(number)
 	if typeof(sciNumExponent) == "string" and typeof(regNumExponent) ~= "string" then
 		return self
 	elseif typeof(sciNumExponent) == "number" and typeof(regNumExponent) == "number" then
-		return self.AddSciNumbers(self, numberInSciNotation)
+		return self.ComputeSciNumbers(self, numberInSciNotation, true)
 	end
 
 end
@@ -228,13 +231,19 @@ function ScientificNumber.__concat(concatinator, self)
 end
 
 function ScientificNumber:__add(valueToAdd)
-
 	if self:IsScientificNumber(valueToAdd) then
-		return self.AddSciNumbers(self, valueToAdd)
+		return self.ComputeSciNumbers(self, valueToAdd, true)
 	elseif typeof(valueToAdd) == "number" then
 		return self.AddNormalNumber(self, valueToAdd)
 	end
+end
 
+function ScientificNumber:__sub(value)
+	if self:IsScientificNumber(value) then
+		return self.ComputeSciNumbers(self, value, false)
+	--elseif typeof(value) == "number" then
+	--	return self.AddNormalNumber(self, value)
+	end
 end
 
 function ScientificNumber.__lt(sciNum, otherNumber)
