@@ -167,7 +167,7 @@ function ScientificNumber.Add(num1, num2)
 	return result
 end
 
-function ScientificNumber:Sub(num1, num2)
+function ScientificNumber.Sub(num1, num2)
 	local exponent1 = num1:GetExponentFromString()
 	local exponent2 = num2:GetExponentFromString()
 
@@ -229,7 +229,7 @@ function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 		if adding then
 			return ScientificNumber.Add(sciNum, otherSciNum)
 		else
-			return ScientificNumber.Add(sciNum, otherSciNum)
+			return ScientificNumber.Sub(sciNum, otherSciNum)
 		end
 		
 	else
