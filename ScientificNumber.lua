@@ -139,6 +139,56 @@ function ScientificNumber:GetLength(number)
 end
 
 --methods only accessed via metamethods
+function ScientificNumber.Add(num1, num2)
+
+	local exponent1 = num1:GetExponentFromString()
+	local exponent2 = num2:GetExponentFromString()
+
+	local sumofExponents = exponent1 + exponent2
+	
+	local finalCooefficient = num1.coefficient + (num2.coefficient) / math.max(10 * exponent1 - exponent2, 1)
+	local finalExponent = exponent1
+
+	if finalCooefficient > 10 then
+		finalCooefficient /= 10
+		finalExponent += 1
+	end		
+	
+	while finalCooefficient < 1 do
+		finalCooefficient /= 10
+		finalExponent += 1
+	end
+	
+	local roundNum = 10^ROUND_TO
+	local result = ScientificNumber.new()
+	result.coefficient = math.round(finalCooefficient*(roundNum))/roundNum
+	result.exponent = finalExponent
+
+	return result
+end
+
+function ScientificNumber:Sub(num1, num2)
+	local exponent1 = num1:GetExponentFromString()
+	local exponent2 = num2:GetExponentFromString()
+
+	local differenceInExponents = exponent1 - exponent2
+	
+	local finalCooefficient = num1.coefficient - (num2.coefficient) / math.max(10 * math.abs(differenceInExponents), 1)
+	local finalExponent = exponent1
+		
+	while finalCooefficient < 1 do
+		finalCooefficient *= 10
+		finalExponent -= 1		
+	end	
+
+	local roundNum = 10^ROUND_TO
+	local result = ScientificNumber.new()
+	result.coefficient = math.round(finalCooefficient*(roundNum))/roundNum
+	result.exponent = finalExponent
+
+	return result
+end
+
 function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 	
 	local largerNum, smallerNum
@@ -149,6 +199,10 @@ function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 		largerNum, smallerNum = otherSciNum, sciNum
 	else
 		print("Equal")
+		if not adding then
+			return 0
+		end
+		
 		--answer is same but coefficient x2
 		local newNumber = ScientificNumber.new()
 		newNumber.exponent = sciNum.exponent
@@ -161,17 +215,9 @@ function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 		
 		return newNumber
 	end
-	
-	local exponent1 = largerNum:GetExponentFromString()
-	local exponent2 = smallerNum:GetExponentFromString()
-	
-	--TODO
-	
-	local finalCooefficient
-	local finalExponent
-	
-	local sumofCoefficients
-	local sumofExponents 
+
+	local exponent1 = sciNum:GetExponentFromString()
+	local exponent2 = otherSciNum:GetExponentFromString()
 	
 	if typeof(exponent1) == "number" and typeof(exponent2) == "number" then
 		
@@ -179,43 +225,16 @@ function ScientificNumber.ComputeSciNumbers(sciNum, otherSciNum, adding)
 		if difference > ROUND_TO then
 			return largerNum
 		end
-
-		sumofExponents = exponent1 + exponent2
-		sumofCoefficients = largerNum.coefficient + smallerNum.coefficient
 		
-		if sumofCoefficients > 10 then
-			sumofCoefficients /= 10
-			sumofExponents += 1
-		elseif sumofExponents < 1 then
-			sumofCoefficients *= 10
-			sumofExponents -= 1			
-		end		
+		if adding then
+			return ScientificNumber.Add(sciNum, otherSciNum)
+		else
+			return ScientificNumber.Add(sciNum, otherSciNum)
+		end
 		
-		local result = ScientificNumber.new()
-		result.coefficient = sumofCoefficients
-		result.exponent = sumofExponents
-		
-		return result
 	else
 		warn("One exponent is not number, cannot add together.")
 		return largerNum
-	end
-
-end
-
-function ScientificNumber:AddNormalNumber(number)
-	assert(math.round(number) == number, "Error when performing arithmetic (add) on scientific number: normal number added must be integer")
-
-	local numberInSciNotation = ScientificNumber.new(number)
-
-	local sciNumExponent = self:GetExponentFromString()
-	local regNumExponent = numberInSciNotation:GetExponentFromString()
-
-	--if one number is string and other is not, added number is insignificant
-	if typeof(sciNumExponent) == "string" and typeof(regNumExponent) ~= "string" then
-		return self
-	elseif typeof(sciNumExponent) == "number" and typeof(regNumExponent) == "number" then
-		return self.ComputeSciNumbers(self, numberInSciNotation, true)
 	end
 
 end
@@ -230,19 +249,19 @@ function ScientificNumber.__concat(concatinator, self)
 	return concatinator..self.coefficient.."x10^"..self.exponent
 end
 
-function ScientificNumber:__add(valueToAdd)
-	if self:IsScientificNumber(valueToAdd) then
-		return self.ComputeSciNumbers(self, valueToAdd, true)
-	elseif typeof(valueToAdd) == "number" then
-		return self.AddNormalNumber(self, valueToAdd)
+function ScientificNumber:__add(value)
+	if self:IsScientificNumber(value) then
+		return self.ComputeSciNumbers(self, value, true)
+	elseif typeof(value) == "number" then
+		return self.ComputeSciNumbers(self, ScientificNumber.new(value), true)
 	end
 end
 
 function ScientificNumber:__sub(value)
 	if self:IsScientificNumber(value) then
 		return self.ComputeSciNumbers(self, value, false)
-	--elseif typeof(value) == "number" then
-	--	return self.AddNormalNumber(self, value)
+	elseif typeof(value) == "number" then
+		return self.ComputeSciNumbers(self, value, false)
 	end
 end
 
