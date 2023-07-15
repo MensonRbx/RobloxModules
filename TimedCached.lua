@@ -16,7 +16,6 @@
 local CACHE_TIMEOUT = 60
 
 local TimedCache = {}
-local ContentMetatable = {}
 
 function TimedCache.new()
 	local self = setmetatable({}, TimedCache)
