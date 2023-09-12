@@ -1,22 +1,23 @@
---[[
-  Been doing some tinkering, and taught of not having a constructor, and just returning a table with functions. 
-  Seems to be the same thing like.
-]]
-
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
-local STORE_VERSION = "1"
+local SAVE_TO_ORDERED_STORES = true
+
 local DATASTORE_NAME = "StudioStore"
+
 local MAX_RETRIES = 5
 
-local defaultStore = DataStoreService:GetDataStore(DATASTORE_NAME..STORE_VERSION)
+local defaultStore = DataStoreService:GetDataStore(DATASTORE_NAME)
 
 local BetterDataService = {}
 
-function BetterDataService:GetPlayerData(player: Player, dataStore: DataStore | OrderedDataStore)
-
+function BetterDataService:GetPlayerData(player: Player, dataStore: DataStore | OrderedDataStore | string)
+	
+	if typeof(dataStore) == "string" then
+		dataStore = DataStoreService:GetDataStore(dataStore)
+	end
+	
 	dataStore = dataStore or defaultStore
 
 	local count = 0
@@ -33,14 +34,18 @@ function BetterDataService:GetPlayerData(player: Player, dataStore: DataStore | 
 
 end
 
-function BetterDataService:SetPlayerData(player: Player, valueToSave: any, dataStore: DataStore | OrderedDataStore)
-
+function BetterDataService:SetPlayerData(player: Player, valueToSave: any, dataStore: DataStore | OrderedDataStore | string)
+	
+	if typeof(dataStore) == "string" then
+		dataStore = DataStoreService:GetDataStore(dataStore)
+	end
+	
 	dataStore = dataStore or defaultStore
 
-	if RunService:IsStudio() and typeof(valueToSave) == "table" then
-		coroutine.wrap(BetterDataService._SetOrderedDataStoreValues)(BetterDataService, player, valueToSave)
+	if SAVE_TO_ORDERED_STORES and typeof(valueToSave) == "table" then
+		coroutine.wrap(BetterDataService._SetOrderedDataStoreValues)(self, player, valueToSave)
 	end
-
+	
 	local count = 0
 	repeat
 		local success = pcall(dataStore.SetAsync, dataStore, tostring(player.UserId), valueToSave)
@@ -52,18 +57,14 @@ function BetterDataService:SetPlayerData(player: Player, valueToSave: any, dataS
 		count += 1
 		task.wait(1 + 2 * count)
 	until count > MAX_RETRIES
-
-	if typeof(valueToSave) == "table" then
-		BetterDataService:_SetOrderedDataStoreValues(player, valueToSave)
-	end
-
+	
 end
 
 function BetterDataService:_SetOrderedDataStoreValues(player: Player, dataTable: table)
 
 	for key, value in dataTable do
 		if typeof(value) == "number" then
-			local orderedDataStore = DataStoreService:GetOrderedDataStore(key.."OrderedStore"..STORE_VERSION)
+			local orderedDataStore = DataStoreService:GetOrderedDataStore(key.."OrderedStore")
 			BetterDataService:SetPlayerData(player, value, orderedDataStore)
 		end
 	end
