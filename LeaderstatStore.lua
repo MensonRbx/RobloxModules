@@ -70,7 +70,7 @@ function LeaderstatStore:GetPlayerData(player)
 			return StudioStore:GetAsync(key)
 		end)
 		
-		if success and data then
+		if success then
 			return data
 		end
 		
